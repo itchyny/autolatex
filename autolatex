@@ -1,0 +1,301 @@
+#!/bin/sh
+
+# Usage: autolatex test.tex
+if [ $# -ne 1 ]; then
+  echo 'no argument'
+  exit 1
+fi
+
+# Source file
+source=`basename "$1"`
+dirname=`dirname "$1"`
+
+# Change the working directory
+cd $dirname
+
+# Basename of the output files
+output=${source%%.*}
+
+# You can omit the file extension
+if [ "$source" = "$output" ]; then
+  source=$source.tex
+  if ! [ -f $source ]; then
+    echo "$source not found"
+    exit 1
+  fi
+fi
+
+# Output pdf
+outputpdf=$output.pdf
+
+# Temporary file
+filename=_$output
+
+# If you write a comment "% filename test", it reads that line and set as the filename.
+if cat "$source" | grep '^% *filename ' > /dev/null; then
+  filename=`cat "$source" | grep '^% *filename ' |\
+    sed 's/% *filename *//' |\
+    tr -d '[\r\n]' `
+  if [ "$output" = "$filename" ]; then
+    filename=_$filename
+  fi
+  outputpdf=$filename.pdf
+fi
+
+outputtex=$filename.tex
+outputaux=$filename.aux
+outputdvi=$filename.dvi
+outputps=$filename.ps
+outputbbl=$filename.bbl
+outputauxbbl=$filename.aux.bbl
+
+if ls *.bib > /dev/null 2>&1; then
+  if [ -f $outputaux ]; then
+    if cat "$source" | grep 'bibliography' > /dev/null; then
+      if which jbibtex > /dev/null; then
+        # You can use jbibtex if you wish with a comment: % jbibtex
+        if cat "$source" | grep '^% *jbibtex *$' > /dev/null; then
+          jbibtex $outputaux
+        else
+          bibtex $outputaux
+        fi
+      else
+        bibtex $outputaux
+      fi
+      if [ -f $outputauxbbl ]; then
+        sed -i.bak -e '/%$/N;s/%\n//' $outputauxbbl
+        mv $outputauxbbl $outputbbl
+      else
+        sed -i.bak -e '/%$/N;s/%\n//' $outputbbl
+      fi
+      rm -f $outputbbl.bak
+    fi
+  fi
+fi
+
+# Borrow document class from existing files in the directory
+if cat *.tex | grep '^\\documentclass' > /dev/null; then
+  documentclass=`cat *.tex | grep '^\\\\documentclass' | head -n 1`
+else
+  documentclass='\documentclass[a4paper,11pt]{article}'
+fi
+
+# If there is \bye command, use tex instead of platex
+usepdflatex=0
+if cat "$source" | grep '% *pdflatex' > /dev/null; then
+  uselatex=1
+  usepdflatex=1
+  TEX=pdflatex
+elif cat "$source" | grep '\\bye' > /dev/null; then
+  uselatex=0
+  TEX=tex
+elif cat "$source" | grep '{\(abc\)}' > /dev/null; then
+  uselatex=1
+  usepdflatex=1
+  TEX=pdflatex
+elif cat "$source" | grep '{\(article\|revtex\)}' > /dev/null; then
+  uselatex=1
+  TEX=latex
+else
+  uselatex=1
+  TEX=platex
+fi
+
+# If xy-pic is used, we have to compile through postscript
+if cat "$source" | grep '^% *nops' > /dev/null; then
+  useps=0
+elif cat "$source" | grep '\({xy}\|Qcircuit\|^% *useps\)' > /dev/null; then
+  useps=1
+else
+  useps=0
+fi
+
+# Check if the argument file is a piece of a document.
+if [ $uselatex -eq 1 ]; then
+  cat "$source" | grep 'documentclass' > /dev/null
+  isdocument=$?
+  if [ $isdocument -ne 0 ]; then
+    echo " ${documentclass}" > $outputtex
+    mainfile=0
+    for file in *tex
+    do
+      if cat $file | grep '^\\documentclass' > /dev/null; then
+        mainfile=1
+        break;
+      fi
+    done
+    if [ $mainfile -eq 1 ]; then
+      cat $file | sed 's/^\\documentclass/% \\documentclass/' |\
+        sed '/\\begin{document}/,$d' >> $outputtex
+      cat $outputtex | grep '\\usepackage{prelude}' > /dev/null
+      if [ $? -eq 1 ]; then
+        if [ -f prelude.sty ]; then
+          echo '\\usepackage{prelude}' >> $outputtex
+        fi
+      fi
+    else
+      if [ -f prelude.sty ]; then
+        echo '\\usepackage{prelude}' >> $outputtex
+      else
+        if cat "$source" | grep 'align' > /dev/null; then
+          echo '\\usepackage{amssymb,amsmath}' >> $outputtex
+        fi
+        if cat "$source" | grep '\\bm' > /dev/null; then
+          echo '\\usepackage{bm}' >> $outputtex
+        fi
+        if cat "$source" | grep '\\includegraphics' > /dev/null; then
+          echo '\\usepackage[dvipdfm]{graphicx}' >> $outputtex
+        fi
+      fi
+    fi
+    echo '\\begin{document}' >> $outputtex
+  else
+    echo '' > $outputtex
+  fi
+else
+  echo '' > $outputtex
+fi
+
+# Check options (example: % dvipdfmx -f dlbase14.map)
+if cat "$source" | grep '^% *dvipdfmx ' > /dev/null; then
+  dvipdfmx_opt=`cat "$source" |\
+    grep '^% *dvipdfmx ' |\
+    sed 's/% *dvipdfmx//' |\
+    tr -d '\r'`
+else
+  dvipdfmx_opt=''
+fi
+if cat "$source" | grep '^% *p\(df\)\?latex ' > /dev/null; then
+  platex_opt=`cat "$source" |\
+    grep '^% *p\(df\)\?latex ' |\
+    sed 's/% *p\(df\)*latex//' |\
+    tr -d '\r'`
+elif cat "$source" | grep '{\(abc\)}' > /dev/null; then
+  platex_opt='--shell-escape'
+else
+  platex_opt=''
+fi
+if cat "$source" | grep '^% *tex ' > /dev/null; then
+  tex_opt=`cat "$source" |\
+    grep '^% *tex ' |\
+    sed 's/% *tex//' |\
+    tr -d '\r'`
+else
+  tex_opt=''
+fi
+
+# Main process
+if [ `uname` = 'Darwin' ]; then
+  cat "$source" | sed 's/^\(\\documentclass\)/ \1/' >> $outputtex
+  if [ $uselatex -eq 1 ]; then
+    if [ $isdocument -ne 0 ]; then
+      echo '\\end{document}' >> $outputtex
+    fi
+  fi
+  if [ $useps -eq 1 ]; then
+    $TEX $tex_opt $platex_opt $outputtex && \
+      dvips $outputdvi && \
+      ps2pdf $outputps && \
+      mv $filename.pdf $outputpdf && \
+      open -a Preview $outputpdf
+  elif [ $usepdflatex -eq 1 ]; then
+    $TEX $tex_opt $platex_opt $outputtex && \
+      mv $filename.pdf $outputpdf && \
+      open -a Preview $outputpdf
+  else
+    $TEX $tex_opt $platex_opt $outputtex && \
+      dvipdfmx $dvipdfmx_opt $outputdvi && \
+      mv $filename.pdf $outputpdf && \
+      open -a Preview $outputpdf
+  fi
+else
+  # nkf -e "$source" >> .$outputtex
+  IFS='
+'
+  if platex -v | head -n 1 | grep utf8 > /dev/null; then
+    nkfopt=-w
+  else
+    nkfopt=-e
+  fi
+  cat "$source" | sed '$s/$/\n/' | sed 's/\\/\\\\/g' | while read -r line; do
+    if echo $line | grep '^\\input ' > /dev/null; then
+      filename=`echo $line | sed 's/\\\\input *//'`
+      if cat $filename | grep '^\\input' > /dev/null; then
+        cat $filename | sed 's/\\/\\\\/g' | while read -r linee; do
+          if echo $linee | grep '^\\input ' > /dev/null; then
+            filename=`echo $linee | sed 's/\\\\input *//'`
+            cat $filename | nkf $nkfopt >> $outputtex
+          else
+            echo $linee | nkf $nkfopt >> $outputtex
+          fi
+        done
+      else
+        cat $filename | nkf $nkfopt >> $outputtex
+      fi
+    else
+      echo $line | nkf $nkfopt >> $outputtex
+    fi
+  done
+  if [ $uselatex -eq 1 ]; then
+    if [ $isdocument -ne 0 ]; then
+      echo '\\end{document}' >> $outputtex
+    fi
+  fi
+  if [ $useps -eq 1 ]; then
+    if $TEX $tex_opt $platex_opt $outputtex && \
+      dvips $outputdvi && \
+      ps2pdf $outputps; then
+      mv $filename.pdf $outputpdf && \
+      evince $outputpdf &
+    fi
+  elif [ $usepdflatex -eq 1 ]; then
+    $TEX $tex_opt $platex_opt $outputtex && \
+      mv $filename.pdf $outputpdf && \
+      open -a Preview $outputpdf
+    if $TEX $tex_opt $platex_opt $outputtex; then
+      mv $filename.pdf $outputpdf && \
+      evince $outputpdf &
+    fi
+  else
+    if $TEX $tex_opt $platex_opt $outputtex && \
+      dvipdfmx $dvipdfmx_opt $outputdvi; then
+      mv $filename.pdf $outputpdf && \
+      evince $outputpdf &
+    fi
+  fi
+fi
+
+# Post process
+rm -f $filename.tex $filename.log $outputdvi $filename.blg $filename.aux.blg
+# If you write a comment "% rm aux toc", read that line and remove files.
+if cat "$source" | grep '^% *rm ' > /dev/null; then
+  files=`cat "$source" |\
+    grep '^% *rm ' |\
+    sed 's/% *rm//' |\
+    sed 's/\([ ,]\)\([^ ,][^ ,]*\)/ '$filename'.\2/g' |\
+    tr '[\r,]' ' ' `
+  rm $files
+fi
+
+exit 0
+
+sleep 1
+echo ''
+# Count pages
+pages=`pdftk $outputpdf dump_data output |\
+  grep -i Pages |\
+  sed 's/.* \([1-9][0-9]*\)/\1/g'`
+echo $pages" pages"
+
+# Count figures
+figures=`cat "$source" |\
+  sed 's/\\input \(.*\)/#include "\1"/' |\
+  cpp -w |\
+  sed 's/\\input \(.*\)/#include "\1"/' |\
+  cpp -w |\
+  sed '/\\if0/,/\\fi/d' |\
+  grep 'label{fig:' |\
+  wc -l |\
+  tr -d '[ \n]'`
+echo $figures" figures"
+
