@@ -276,26 +276,3 @@ if cat "$source" | grep '^% *rm ' > /dev/null; then
     tr '[\r,]' ' ' `
   rm $files
 fi
-
-exit 0
-
-sleep 1
-echo ''
-# Count pages
-pages=`pdftk $outputpdf dump_data output |\
-  grep -i Pages |\
-  sed 's/.* \([1-9][0-9]*\)/\1/g'`
-echo $pages" pages"
-
-# Count figures
-figures=`cat "$source" |\
-  sed 's/\\input \(.*\)/#include "\1"/' |\
-  cpp -w |\
-  sed 's/\\input \(.*\)/#include "\1"/' |\
-  cpp -w |\
-  sed '/\\if0/,/\\fi/d' |\
-  grep 'label{fig:' |\
-  wc -l |\
-  tr -d '[ \n]'`
-echo $figures" figures"
-
