@@ -2,7 +2,7 @@
 # Filename: autolatex
 # Author: itchyny
 # License: MIT License
-# Last Change: 2014/05/13 21:05:10.
+# Last Change: 2014/05/13 21:11:02.
 
 # Usage: autolatex test.tex
 if [ $# -ne 1 ]; then
@@ -199,7 +199,7 @@ else
 fi
 
 # Create the tex file
-if [ $utf8 -eq $sourceutf8 ]; then
+if [ $utf8 -eq 1 ] && [ $sourceutf8 -eq 1 ]; then
   cat "$source" | sed 's/^\(\\documentclass\)/ \1/' >> "$filename.tex"
   echo $enddocument >> "$filename.tex"
 else
