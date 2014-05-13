@@ -2,7 +2,7 @@
 # Filename: autolatex
 # Author: itchyny
 # License: MIT License
-# Last Change: 2014/05/13 14:11:37.
+# Last Change: 2014/05/13 15:16:54.
 
 # Usage: autolatex test.tex
 if [ $# -ne 1 ]; then
@@ -132,8 +132,8 @@ if [ $uselatex -eq 1 ]; then
       fi
     done
     if [ $mainfile -eq 1 ]; then
-      cat $file | sed 's/^\\documentclass/% \\documentclass/' |\
-        sed '/\\begin{document}/,$d' >> $filename.tex
+      cat $file | LC_ALL=C sed 's/^\\documentclass/% \\documentclass/' |\
+        LC_ALL=C sed '/\\begin{document}/,$d' >> $filename.tex
       cat $filename.tex | grep '\\usepackage{prelude}' > /dev/null
       if [ $? -eq 1 ]; then
         if [ -f prelude.sty ]; then
@@ -235,20 +235,20 @@ else
   else
     nkfopt=-e
   fi
-  cat "$source" | LC_ALL=C sed '$s/$/\n/' | LC_ALL=C sed 's/\\/\\\\/g' | while read -r line; do
+  cat "$source" | LC_ALL=C sed 's/\\/\\\\/g' | while read -r line; do
     if echo $line | grep '^\\input ' > /dev/null; then
-      filename=`echo $line | LC_ALL=C sed 's/\\\\input *//'`
-      if cat $filename | grep '^\\input' > /dev/null; then
-        cat $filename | LC_ALL=C sed 's/\\/\\\\/g' | while read -r linee; do
+      inputfilename=`echo $line | LC_ALL=C sed 's/\\\\input *//'`
+      if cat $inputfilename | grep '^\\input' > /dev/null; then
+        cat $inputfilename | LC_ALL=C sed 's/\\/\\\\/g' | while read -r linee; do
           if echo $linee | grep '^\\input ' > /dev/null; then
-            filename=`echo $linee | LC_ALL=C sed 's/\\\\input *//'`
-            cat $filename | nkf $nkfopt >> $filename.tex
+            inputfilename=`echo $linee | LC_ALL=C sed 's/\\\\input *//'`
+            cat $inputfilename | nkf $nkfopt >> $filename.tex
           else
             echo $linee | nkf $nkfopt >> $filename.tex
           fi
         done
       else
-        cat $filename | nkf $nkfopt >> $filename.tex
+        cat $inputfilename | nkf $nkfopt >> $filename.tex
       fi
     else
       echo $line | nkf $nkfopt >> $filename.tex
