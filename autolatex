@@ -2,7 +2,7 @@
 # Filename: autolatex
 # Author: itchyny
 # License: MIT License
-# Last Change: 2014/05/13 19:08:48.
+# Last Change: 2014/05/13 21:04:44.
 
 # Usage: autolatex test.tex
 if [ $# -ne 1 ]; then
@@ -208,9 +208,9 @@ else
   if platex -v | head -n 1 | grep "(utf8" > /dev/null; then
     nkfopt=-w
   elif platex -v | head -n 1 | grep "(sjis" > /dev/null; then
-    nkfopt=-e
-  else
     nkfopt=-s
+  else
+    nkfopt=-e
   fi
   cat "$source" | LC_ALL=C sed 's/\\/\\\\/g' | while read -r line; do
     if echo $line | grep '^\\input ' > /dev/null; then
