@@ -2,7 +2,7 @@
 # Filename: autolatex
 # Author: itchyny
 # License: MIT License
-# Last Change: 2014/05/13 16:49:23.
+# Last Change: 2014/05/13 17:28:32.
 
 # Usage: autolatex test.tex
 if [ $# -ne 1 ]; then
@@ -47,26 +47,21 @@ if cat "$source" | grep '^% *filename ' > /dev/null; then
 fi
 
 # BibTeX
-if ls *.bib > /dev/null 2>&1; then
-  if [ -f "$filename.aux" ]; then
-    if cat "$source" | grep 'bibliography' > /dev/null; then
-      if command -v jbibtex >/dev/null 2>&1; then
-        # You can use jbibtex if you wish with a comment: % jbibtex
-        if cat "$source" | grep '^% *jbibtex *$' > /dev/null; then
-          jbibtex "$filename.aux"
-        else
-          bibtex "$filename.aux"
-        fi
-      else
-        bibtex "$filename.aux"
-      fi
-      if [ -f "$filename.aux.bbl" ]; then
-        sed -i.bak -e '/%$/N;s/%\n//' "$filename.aux.bbl"
-        mv "$filename.aux.bbl" "$filename.bbl"
-      else
-        sed -i.bak -e '/%$/N;s/%\n//' "$filename.bbl"
-      fi
-      rm -f "$filename.bbl.bak"
+# You can use jbibtex if you wish with a comment: % jbibtex
+if command -v jbibtex >/dev/null 2>&1 && cat "$source" | grep '^% *jbibtex *$' > /dev/null; then
+  bibtex=jbibtex
+else
+  bibtex=bibtex
+fi
+
+if ls *.bib > /dev/null 2>&1 && [ -f "$filename.aux" ]; then
+  if cat "$source" | grep '\\bibliography' > /dev/null; then
+    $bibtex "$filename.aux"
+    if [ -f "$filename.aux.bbl" ]; then
+      sed -i.bak -e '/%$/N;s/%\n//' "$filename.aux.bbl"
+      mv "$filename.aux.bbl" "$filename.bbl"
+    else
+      sed -i.bak -e '/%$/N;s/%\n//' "$filename.bbl"
     fi
   fi
 fi
@@ -267,7 +262,7 @@ if eval $texprocess; then
 fi
 
 # Post process
-rm -f "$filename.tex" "$filename.log" "$filename.dvi" "$filename.blg" "$filename.aux.blg"
+rm -f "$filename.tex" "$filename.log" "$filename.dvi" "$filename.blg" "$filename.aux.blg" "$filename.bbl.bak" "$filename.aux.bbl.bak"
 # If you write a comment "% rm aux toc", read that line and remove files.
 if cat "$source" | grep '^% *rm ' > /dev/null; then
   files=`cat "$source" |\
