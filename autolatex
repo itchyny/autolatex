@@ -2,7 +2,7 @@
 # Filename: autolatex
 # Author: itchyny
 # License: MIT License
-# Last Change: 2014/05/13 17:28:32.
+# Last Change: 2014/05/13 17:51:39.
 
 # Usage: autolatex test.tex
 if [ $# -ne 1 ]; then
@@ -101,15 +101,6 @@ elif cat "$source" | grep '\({xy}\|Qcircuit\|^% *useps\)' > /dev/null; then
   useps=1
 else
   useps=0
-fi
-
-# TeX process
-if [ $useps -eq 1 ]; then
-  texprocess="$TEX $tex_opt \"$filename.tex\" && dvips \"$filename.dvi\" && ps2pdf \"$filename.ps\""
-elif [ $usepdflatex -eq 1 ]; then
-  texprocess="$TEX $tex_opt \"$filename.tex\""
-else
-  texprocess="$TEX $tex_opt \"$filename.tex\" && dvipdfmx $dvipdfmx_opt \"$filename.dvi\""
 fi
 
 # Check if the argument file is a piece of a document.
@@ -211,6 +202,15 @@ if $encoding "$source" | grep "utf-8\|us-ascii" > /dev/null; then
   sourceutf8=1
 else
   sourceutf8=0
+fi
+
+# TeX process
+if [ $useps -eq 1 ]; then
+  texprocess="$TEX $tex_opt \"$filename.tex\" && dvips \"$filename.dvi\" && ps2pdf \"$filename.ps\""
+elif [ $usepdflatex -eq 1 ]; then
+  texprocess="$TEX $tex_opt \"$filename.tex\""
+else
+  texprocess="$TEX $tex_opt \"$filename.tex\" && dvipdfmx $dvipdfmx_opt \"$filename.dvi\""
 fi
 
 # Create the tex file
