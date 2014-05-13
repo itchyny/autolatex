@@ -2,7 +2,7 @@
 # Filename: autolatex
 # Author: itchyny
 # License: MIT License
-# Last Change: 2014/05/13 16:09:22.
+# Last Change: 2014/05/13 16:18:19.
 
 # Usage: autolatex test.tex
 if [ $# -ne 1 ]; then
@@ -48,25 +48,25 @@ fi
 
 # BibTeX
 if ls *.bib > /dev/null 2>&1; then
-  if [ -f $filename.aux ]; then
+  if [ -f "$filename.aux" ]; then
     if cat "$source" | grep 'bibliography' > /dev/null; then
       if which jbibtex > /dev/null; then
         # You can use jbibtex if you wish with a comment: % jbibtex
         if cat "$source" | grep '^% *jbibtex *$' > /dev/null; then
-          jbibtex $filename.aux
+          jbibtex "$filename.aux"
         else
-          bibtex $filename.aux
+          bibtex "$filename.aux"
         fi
       else
-        bibtex $filename.aux
+        bibtex "$filename.aux"
       fi
-      if [ -f $filename.aux.bbl ]; then
-        sed -i.bak -e '/%$/N;s/%\n//' $filename.aux.bbl
-        mv $filename.aux.bbl $filename.bbl
+      if [ -f "$filename.aux.bbl" ]; then
+        sed -i.bak -e '/%$/N;s/%\n//' "$filename.aux.bbl"
+        mv "$filename.aux.bbl" "$filename.bbl"
       else
-        sed -i.bak -e '/%$/N;s/%\n//' $filename.bbl
+        sed -i.bak -e '/%$/N;s/%\n//' "$filename.bbl"
       fi
-      rm -f $filename.bbl.bak
+      rm -f "$filename.bbl.bak"
     fi
   fi
 fi
@@ -220,14 +220,14 @@ fi
 
 # Create the tex file
 if [ $utf8 -eq $sourceutf8 ]; then
-  cat "$source" | sed 's/^\(\\documentclass\)/ \1/' >> $filename.tex
+  cat "$source" | sed 's/^\(\\documentclass\)/ \1/' >> "$filename.tex"
   if [ $uselatex -eq 1 ]; then
     if [ $isdocument -ne 0 ]; then
-      echo '\\end{document}' >> $filename.tex
+      echo '\\end{document}' >> "$filename.tex"
     fi
   fi
 else
-  # nkf -e "$source" >> .$filename.tex
+  # nkf -e "$source" >> ."$filename.tex"
   IFS=$'\n'
   if platex -v | head -n 1 | grep "(utf8" > /dev/null; then
     nkfopt=-w
@@ -242,18 +242,18 @@ else
       cat "$inputfilename" | LC_ALL=C sed 's/\\/\\\\/g' | while read -r linee; do
         if echo $linee | grep '^\\input ' > /dev/null; then
           inputfilename=`echo $linee | LC_ALL=C sed 's/\\\\input *//'`
-          cat "$inputfilename" | nkf $nkfopt >> $filename.tex
+          cat "$inputfilename" | nkf $nkfopt >> "$filename.tex"
         else
-          echo $linee | nkf $nkfopt >> $filename.tex
+          echo $linee | nkf $nkfopt >> "$filename.tex"
         fi
       done
     else
-      echo $line | nkf $nkfopt >> $filename.tex
+      echo $line | nkf $nkfopt >> "$filename.tex"
     fi
   done
   if [ $uselatex -eq 1 ]; then
     if [ $isdocument -ne 0 ]; then
-      echo '\\end{document}' >> $filename.tex
+      echo '\\end{document}' >> "$filename.tex"
     fi
   fi
 fi
