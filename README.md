@@ -1,4 +1,5 @@
-# autolatex - A shell script to compile a LaTeX file
+# autolatex
+### A shell script to compile a LaTeX file
 ## Usage
 ```sh
 autolatex article.tex
