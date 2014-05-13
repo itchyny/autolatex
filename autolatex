@@ -2,7 +2,7 @@
 # Filename: autolatex
 # Author: itchyny
 # License: MIT License
-# Last Change: 2014/05/13 13:17:34.
+# Last Change: 2014/05/13 13:41:09.
 
 # Usage: autolatex test.tex
 if [ $# -ne 1 ]; then
@@ -46,33 +46,26 @@ if cat "$source" | grep '^% *filename ' > /dev/null; then
   fi
 fi
 
-outputtex=$filename.tex
-outputaux=$filename.aux
-outputdvi=$filename.dvi
-outputps=$filename.ps
-outputbbl=$filename.bbl
-outputauxbbl=$filename.aux.bbl
-
 if ls *.bib > /dev/null 2>&1; then
-  if [ -f $outputaux ]; then
+  if [ -f $filename.aux ]; then
     if cat "$source" | grep 'bibliography' > /dev/null; then
       if which jbibtex > /dev/null; then
         # You can use jbibtex if you wish with a comment: % jbibtex
         if cat "$source" | grep '^% *jbibtex *$' > /dev/null; then
-          jbibtex $outputaux
+          jbibtex $filename.aux
         else
-          bibtex $outputaux
+          bibtex $filename.aux
         fi
       else
-        bibtex $outputaux
+        bibtex $filename.aux
       fi
-      if [ -f $outputauxbbl ]; then
-        sed -i.bak -e '/%$/N;s/%\n//' $outputauxbbl
-        mv $outputauxbbl $outputbbl
+      if [ -f $filename.aux.bbl ]; then
+        sed -i.bak -e '/%$/N;s/%\n//' $filename.aux.bbl
+        mv $filename.aux.bbl $filename.bbl
       else
-        sed -i.bak -e '/%$/N;s/%\n//' $outputbbl
+        sed -i.bak -e '/%$/N;s/%\n//' $filename.bbl
       fi
-      rm -f $outputbbl.bak
+      rm -f $filename.bbl.bak
     fi
   fi
 fi
@@ -119,7 +112,7 @@ if [ $uselatex -eq 1 ]; then
   cat "$source" | grep 'documentclass' > /dev/null
   isdocument=$?
   if [ $isdocument -ne 0 ]; then
-    echo " ${documentclass}" > $outputtex
+    echo " ${documentclass}" > $filename.tex
     mainfile=0
     for file in *tex
     do
@@ -130,34 +123,34 @@ if [ $uselatex -eq 1 ]; then
     done
     if [ $mainfile -eq 1 ]; then
       cat $file | sed 's/^\\documentclass/% \\documentclass/' |\
-        sed '/\\begin{document}/,$d' >> $outputtex
-      cat $outputtex | grep '\\usepackage{prelude}' > /dev/null
+        sed '/\\begin{document}/,$d' >> $filename.tex
+      cat $filename.tex | grep '\\usepackage{prelude}' > /dev/null
       if [ $? -eq 1 ]; then
         if [ -f prelude.sty ]; then
-          echo '\\usepackage{prelude}' >> $outputtex
+          echo '\\usepackage{prelude}' >> $filename.tex
         fi
       fi
     else
       if [ -f prelude.sty ]; then
-        echo '\\usepackage{prelude}' >> $outputtex
+        echo '\\usepackage{prelude}' >> $filename.tex
       else
         if cat "$source" | grep 'align' > /dev/null; then
-          echo '\\usepackage{amssymb,amsmath}' >> $outputtex
+          echo '\\usepackage{amssymb,amsmath}' >> $filename.tex
         fi
         if cat "$source" | grep '\\bm' > /dev/null; then
-          echo '\\usepackage{bm}' >> $outputtex
+          echo '\\usepackage{bm}' >> $filename.tex
         fi
         if cat "$source" | grep '\\includegraphics' > /dev/null; then
-          echo '\\usepackage[dvipdfm]{graphicx}' >> $outputtex
+          echo '\\usepackage[dvipdfm]{graphicx}' >> $filename.tex
         fi
       fi
     fi
-    echo '\\begin{document}' >> $outputtex
+    echo '\\begin{document}' >> $filename.tex
   else
-    echo '' > $outputtex
+    echo '' > $filename.tex
   fi
 else
-  echo '' > $outputtex
+  echo '' > $filename.tex
 fi
 
 # Check options (example: % dvipdfmx -f dlbase14.map)
@@ -226,14 +219,14 @@ fi
 
 # Create the tex file
 if [ $utf8 -eq $sourceutf8 ]; then
-  cat "$source" | sed 's/^\(\\documentclass\)/ \1/' >> $outputtex
+  cat "$source" | sed 's/^\(\\documentclass\)/ \1/' >> $filename.tex
   if [ $uselatex -eq 1 ]; then
     if [ $isdocument -ne 0 ]; then
-      echo '\\end{document}' >> $outputtex
+      echo '\\end{document}' >> $filename.tex
     fi
   fi
 else
-  # nkf -e "$source" >> .$outputtex
+  # nkf -e "$source" >> .$filename.tex
   IFS='
 '
   if platex -v | head -n 1 | grep utf8 > /dev/null; then
@@ -248,21 +241,21 @@ else
         cat $filename | LC_ALL=C sed 's/\\/\\\\/g' | while read -r linee; do
           if echo $linee | grep '^\\input ' > /dev/null; then
             filename=`echo $linee | LC_ALL=C sed 's/\\\\input *//'`
-            cat $filename | nkf $nkfopt >> $outputtex
+            cat $filename | nkf $nkfopt >> $filename.tex
           else
-            echo $linee | nkf $nkfopt >> $outputtex
+            echo $linee | nkf $nkfopt >> $filename.tex
           fi
         done
       else
-        cat $filename | nkf $nkfopt >> $outputtex
+        cat $filename | nkf $nkfopt >> $filename.tex
       fi
     else
-      echo $line | nkf $nkfopt >> $outputtex
+      echo $line | nkf $nkfopt >> $filename.tex
     fi
   done
   if [ $uselatex -eq 1 ]; then
     if [ $isdocument -ne 0 ]; then
-      echo '\\end{document}' >> $outputtex
+      echo '\\end{document}' >> $filename.tex
     fi
   fi
 fi
@@ -270,18 +263,18 @@ fi
 # Main process
 success=0
 if [ $useps -eq 1 ]; then
-  if $TEX $tex_opt $platex_opt $outputtex && \
-    dvips $outputdvi && \
-    ps2pdf $outputps; then
+  if $TEX $tex_opt $platex_opt $filename.tex && \
+    dvips $filename.dvi && \
+    ps2pdf $filename.ps; then
     success=1
   fi
 elif [ $usepdflatex -eq 1 ]; then
-  if $TEX $tex_opt $platex_opt $outputtex; then
+  if $TEX $tex_opt $platex_opt $filename.tex; then
     success=1
   fi
 else
-  if $TEX $tex_opt $platex_opt $outputtex && \
-    dvipdfmx $dvipdfmx_opt $outputdvi; then
+  if $TEX $tex_opt $platex_opt $filename.tex && \
+    dvipdfmx $dvipdfmx_opt $filename.dvi; then
     success=1
   fi
 fi
@@ -293,7 +286,7 @@ if [ $success -eq 1 ]; then
 fi
 
 # Post process
-rm -f $filename.tex $filename.log $outputdvi $filename.blg $filename.aux.blg
+rm -f $filename.tex $filename.log $filename.dvi $filename.blg $filename.aux.blg
 # If you write a comment "% rm aux toc", read that line and remove files.
 if cat "$source" | grep '^% *rm ' > /dev/null; then
   files=`cat "$source" |\
