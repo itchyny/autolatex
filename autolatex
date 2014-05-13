@@ -2,7 +2,7 @@
 # Filename: autolatex
 # Author: itchyny
 # License: MIT License
-# Last Change: 2014/05/13 16:18:19.
+# Last Change: 2014/05/13 16:35:56.
 
 # Usage: autolatex test.tex
 if [ $# -ne 1 ]; then
@@ -50,7 +50,7 @@ fi
 if ls *.bib > /dev/null 2>&1; then
   if [ -f "$filename.aux" ]; then
     if cat "$source" | grep 'bibliography' > /dev/null; then
-      if which jbibtex > /dev/null; then
+      if command -v jbibtex >/dev/null 2>&1; then
         # You can use jbibtex if you wish with a comment: % jbibtex
         if cat "$source" | grep '^% *jbibtex *$' > /dev/null; then
           jbibtex "$filename.aux"
