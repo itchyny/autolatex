@@ -237,7 +237,7 @@ else
   else
     nkfopt=-e
   fi
-  cat "$source" | sed '$s/$/\n/' | sed 's/\\/\\\\/g' | while read -r line; do
+  cat "$source" | LC_ALL=C sed '$s/$/\n/' | LC_ALL=C sed 's/\\/\\\\/g' | while read -r line; do
     if echo $line | grep '^\\input ' > /dev/null; then
       filename=`echo $line | sed 's/\\\\input *//'`
       if cat $filename | grep '^\\input' > /dev/null; then
