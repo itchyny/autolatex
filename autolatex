@@ -1,4 +1,8 @@
 #!/bin/sh
+# Filename: autolatex
+# Author: itchyny
+# License: MIT License
+# Last Change: 2014/05/13 10:43:52.
 
 # Usage: autolatex test.tex
 if [ $# -ne 1 ]; then
