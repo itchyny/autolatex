@@ -2,7 +2,7 @@
 # Filename: autolatex
 # Author: itchyny
 # License: MIT License
-# Last Change: 2014/05/13 15:53:25.
+# Last Change: 2014/05/13 16:02:29.
 
 # Usage: autolatex test.tex
 if [ $# -ne 1 ]; then
@@ -228,8 +228,7 @@ if [ $utf8 -eq $sourceutf8 ]; then
   fi
 else
   # nkf -e "$source" >> .$filename.tex
-  IFS='
-'
+  IFS=$'\n'
   if platex -v | head -n 1 | grep "(utf8" > /dev/null; then
     nkfopt=-w
   elif platex -v | head -n 1 | grep "(sjis" > /dev/null; then
