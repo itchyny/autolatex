@@ -2,7 +2,7 @@
 # Filename: autolatex
 # Author: itchyny
 # License: MIT License
-# Last Change: 2014/05/13 11:00:04.
+# Last Change: 2014/05/13 12:37:29.
 
 # Usage: autolatex test.tex
 if [ $# -ne 1 ]; then
@@ -11,8 +11,8 @@ if [ $# -ne 1 ]; then
 fi
 
 # Source file
-source=`basename "$1"`
-dirname=`dirname "$1"`
+source=$(basename "$1")
+dirname=$(dirname "$1")
 
 # Change the working directory
 cd $dirname
@@ -213,10 +213,12 @@ else
 fi
 
 # Check the encoding of the source file
-if [ `uname` = 'Darwin' ]; then
+if [ "$(uname)" == "Darwin" ]; then
   encoding="file --mime"
+  echo "Darwin"
 else
   encoding="file -bi"
+  echo "no Darwin"
 fi
 if $encoding "$source" | grep "utf-8\|us-ascii" > /dev/null; then
   sourceutf8=1
