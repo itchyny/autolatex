@@ -269,18 +269,18 @@ if [ $useps -eq 1 ]; then
     dvips $outputdvi && \
     ps2pdf $outputps; then
     mv $filename.pdf $outputpdf && \
-    $pdfviewer $outputpdf &
+    eval $pdfviewer $outputpdf &
   fi
 elif [ $usepdflatex -eq 1 ]; then
   if $TEX $tex_opt $platex_opt $outputtex; then
     mv $filename.pdf $outputpdf && \
-    $pdfviewer $outputpdf &
+    eval $pdfviewer $outputpdf &
   fi
 else
   if $TEX $tex_opt $platex_opt $outputtex && \
     dvipdfmx $dvipdfmx_opt $outputdvi; then
     mv $filename.pdf $outputpdf && \
-    $pdfviewer $outputpdf &
+    eval $pdfviewer $outputpdf &
   fi
 fi
 
