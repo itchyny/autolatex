@@ -2,7 +2,7 @@
 # Filename: autolatex
 # Author: itchyny
 # License: MIT License
-# Last Change: 2014/05/13 13:41:41.
+# Last Change: 2014/05/13 13:50:26.
 
 # Usage: autolatex test.tex
 if [ $# -ne 1 ]; then
@@ -108,6 +108,15 @@ else
   useps=0
 fi
 
+# TeX process
+if [ $useps -eq 1 ]; then
+  texprocess="$TEX $tex_opt $filename.tex && dvips $filename.dvi && ps2pdf $filename.ps"
+elif [ $usepdflatex -eq 1 ]; then
+  texprocess="$TEX $tex_opt $filename.tex"
+else
+  texprocess="$TEX $tex_opt $filename.tex && dvipdfmx $dvipdfmx_opt $filename.dvi"
+fi
+
 # Check if the argument file is a piece of a document.
 if [ $uselatex -eq 1 ]; then
   cat "$source" | grep 'documentclass' > /dev/null
@@ -163,23 +172,14 @@ if cat "$source" | grep '^% *dvipdfmx ' > /dev/null; then
 else
   dvipdfmx_opt=''
 fi
-if cat "$source" | grep '^% *p\(df\)\?latex ' > /dev/null; then
-  platex_opt=`cat "$source" |\
-    grep '^% *p\(df\)\?latex ' |\
-    sed 's/% *p\(df\)*latex//' |\
+tex_opt=''
+if cat "$source" | grep '^% *\(p\(df\)\?la\)\?tex ' > /dev/null; then
+  tex_opt=`cat "$source" |\
+    grep '^% *\(p\(df\)\?la\)\?tex ' |\
+    sed 's/% *\(p\(df\)*la\)*tex//' |\
     tr -d '\r'`
 elif cat "$source" | grep '{\(abc\)}' > /dev/null; then
-  platex_opt='--shell-escape'
-else
-  platex_opt=''
-fi
-if cat "$source" | grep '^% *tex ' > /dev/null; then
-  tex_opt=`cat "$source" |\
-    grep '^% *tex ' |\
-    sed 's/% *tex//' |\
-    tr -d '\r'`
-else
-  tex_opt=''
+  tex_opt='--shell-escape'
 fi
 
 # Pdf viewer
@@ -262,24 +262,7 @@ else
 fi
 
 # Main process
-success=0
-if [ $useps -eq 1 ]; then
-  if $TEX $tex_opt $platex_opt $filename.tex && \
-    dvips $filename.dvi && \
-    ps2pdf $filename.ps; then
-    success=1
-  fi
-elif [ $usepdflatex -eq 1 ]; then
-  if $TEX $tex_opt $platex_opt $filename.tex; then
-    success=1
-  fi
-else
-  if $TEX $tex_opt $platex_opt $filename.tex && \
-    dvipdfmx $dvipdfmx_opt $filename.dvi; then
-    success=1
-  fi
-fi
-if [ $success -eq 1 ]; then
+if eval $texprocess; then
   if [ "$filename.pdf" != "$outputpdf" ]; then
     mv $filename.pdf $outputpdf
   fi
