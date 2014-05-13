@@ -2,7 +2,7 @@
 # Filename: autolatex
 # Author: itchyny
 # License: MIT License
-# Last Change: 2014/05/13 13:41:09.
+# Last Change: 2014/05/13 13:41:41.
 
 # Usage: autolatex test.tex
 if [ $# -ne 1 ]; then
@@ -46,6 +46,7 @@ if cat "$source" | grep '^% *filename ' > /dev/null; then
   fi
 fi
 
+# BibTeX
 if ls *.bib > /dev/null 2>&1; then
   if [ -f $filename.aux ]; then
     if cat "$source" | grep 'bibliography' > /dev/null; then
