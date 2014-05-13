@@ -2,7 +2,7 @@
 # Filename: autolatex
 # Author: itchyny
 # License: MIT License
-# Last Change: 2014/05/13 17:51:39.
+# Last Change: 2014/05/13 18:29:16.
 
 # Usage: autolatex test.tex
 if [ $# -ne 1 ]; then
@@ -78,20 +78,20 @@ usepdflatex=0
 if cat "$source" | grep '% *pdflatex' > /dev/null; then
   uselatex=1
   usepdflatex=1
-  TEX=pdflatex
+  tex=pdflatex
 elif cat "$source" | grep '\\bye' > /dev/null; then
   uselatex=0
-  TEX=tex
+  tex=tex
 elif cat "$source" | grep '{\(abc\)}' > /dev/null; then
   uselatex=1
   usepdflatex=1
-  TEX=pdflatex
+  tex=pdflatex
 elif cat "$source" | grep '{\(article\|revtex\)}' > /dev/null; then
   uselatex=1
-  TEX=latex
+  tex=latex
 else
   uselatex=1
-  TEX=platex
+  tex=platex
 fi
 
 # If xy-pic is used, we have to compile through postscript
@@ -206,11 +206,11 @@ fi
 
 # TeX process
 if [ $useps -eq 1 ]; then
-  texprocess="$TEX $tex_opt \"$filename.tex\" && dvips \"$filename.dvi\" && ps2pdf \"$filename.ps\""
+  texprocess="$tex $tex_opt \"$filename.tex\" && dvips \"$filename.dvi\" && ps2pdf \"$filename.ps\""
 elif [ $usepdflatex -eq 1 ]; then
-  texprocess="$TEX $tex_opt \"$filename.tex\""
+  texprocess="$tex $tex_opt \"$filename.tex\""
 else
-  texprocess="$TEX $tex_opt \"$filename.tex\" && dvipdfmx $dvipdfmx_opt \"$filename.dvi\""
+  texprocess="$tex $tex_opt \"$filename.tex\" && dvipdfmx $dvipdfmx_opt \"$filename.dvi\""
 fi
 
 # Create the tex file
