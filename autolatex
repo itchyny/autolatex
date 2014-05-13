@@ -201,8 +201,27 @@ elif command -v kpdf >/dev/null 2>&1; then
   pdfviewer="kpdf"
 fi
 
-# Create the tex file
+# Check if platex supports utf8
+if platex -v | head -n 1 | grep "(utf8" > /dev/null; then
+  utf8=1
+else
+  utf8=0
+fi
+
+# Check the encoding of the source file
 if [ `uname` = 'Darwin' ]; then
+  encoding="file --mime"
+else
+  encoding="file -bi"
+fi
+if $encoding "$source" | grep utf-8 > /dev/null; then
+  sourceutf8=1
+else
+  sourceutf8=0
+fi
+
+# Create the tex file
+if [ $utf8 -eq $sourceutf8 ]; then
   cat "$source" | sed 's/^\(\\documentclass\)/ \1/' >> $outputtex
   if [ $uselatex -eq 1 ]; then
     if [ $isdocument -ne 0 ]; then
