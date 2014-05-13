@@ -2,7 +2,7 @@
 # Filename: autolatex
 # Author: itchyny
 # License: MIT License
-# Last Change: 2014/05/13 10:54:42.
+# Last Change: 2014/05/13 11:00:04.
 
 # Usage: autolatex test.tex
 if [ $# -ne 1 ]; then
@@ -40,10 +40,10 @@ if cat "$source" | grep '^% *filename ' > /dev/null; then
   filename=`cat "$source" | grep '^% *filename ' |\
     sed 's/% *filename *//' |\
     tr -d '[\r\n]' `
+  outputpdf=$filename.pdf
   if [ "$output" = "$filename" ]; then
     filename=_$filename
   fi
-  outputpdf=$filename.pdf
 fi
 
 outputtex=$filename.tex
