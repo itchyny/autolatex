@@ -2,7 +2,7 @@
 # Filename: autolatex
 # Author: itchyny
 # License: MIT License
-# Last Change: 2014/05/13 18:47:19.
+# Last Change: 2014/05/13 19:00:02.
 
 # Usage: autolatex test.tex
 if [ $# -ne 1 ]; then
@@ -118,7 +118,7 @@ if [ $uselatex -eq 1 ] && ! cat "$source" | grep 'documentclass' > /dev/null; th
     cat "$file" | LC_ALL=C sed 's/^\\documentclass/% \\documentclass/' |\
       LC_ALL=C sed '/\\begin{document}/,$d' >> "$filename.tex"
   else
-    if cat "$source" | grep 'align' > /dev/null; then
+    if cat "$source" | grep '{\(align\|cases\)' > /dev/null; then
       echo '\\usepackage{amssymb,amsmath}' >> "$filename.tex"
     fi
     if cat "$source" | grep '\\bm' > /dev/null; then
