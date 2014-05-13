@@ -2,7 +2,7 @@
 # Filename: autolatex
 # Author: itchyny
 # License: MIT License
-# Last Change: 2014/05/13 15:35:18.
+# Last Change: 2014/05/13 15:41:20.
 
 # Usage: autolatex test.tex
 if [ $# -ne 1 ]; then
@@ -21,7 +21,7 @@ cd $dirname
 output=${source%%.*}
 
 # You can omit the file extension
-if ! [ -f $source ] && [ "$source" = "$output" ]; then
+if ! [ -f "$source" ] && [ "$source" = "$output" ]; then
   source=$source.tex
   if ! [ -f $source ]; then
     echo "$source not found"
@@ -110,11 +110,11 @@ fi
 
 # TeX process
 if [ $useps -eq 1 ]; then
-  texprocess="$TEX $tex_opt $filename.tex && dvips $filename.dvi && ps2pdf $filename.ps"
+  texprocess="$TEX $tex_opt \"$filename.tex\" && dvips \"$filename.dvi\" && ps2pdf \"$filename.ps\""
 elif [ $usepdflatex -eq 1 ]; then
-  texprocess="$TEX $tex_opt $filename.tex"
+  texprocess="$TEX $tex_opt \"$filename.tex\""
 else
-  texprocess="$TEX $tex_opt $filename.tex && dvipdfmx $dvipdfmx_opt $filename.dvi"
+  texprocess="$TEX $tex_opt \"$filename.tex\" && dvipdfmx $dvipdfmx_opt \"$filename.dvi\""
 fi
 
 # Check if the argument file is a piece of a document.
@@ -122,7 +122,7 @@ if [ $uselatex -eq 1 ]; then
   cat "$source" | grep 'documentclass' > /dev/null
   isdocument=$?
   if [ $isdocument -ne 0 ]; then
-    echo " ${documentclass}" > $filename.tex
+    echo " ${documentclass}" > "$filename.tex"
     mainfile=0
     for file in *tex
     do
@@ -133,34 +133,34 @@ if [ $uselatex -eq 1 ]; then
     done
     if [ $mainfile -eq 1 ]; then
       cat $file | LC_ALL=C sed 's/^\\documentclass/% \\documentclass/' |\
-        LC_ALL=C sed '/\\begin{document}/,$d' >> $filename.tex
-      cat $filename.tex | grep '\\usepackage{prelude}' > /dev/null
+        LC_ALL=C sed '/\\begin{document}/,$d' >> "$filename.tex"
+      cat "$filename.tex" | grep '\\usepackage{prelude}' > /dev/null
       if [ $? -eq 1 ]; then
         if [ -f prelude.sty ]; then
-          echo '\\usepackage{prelude}' >> $filename.tex
+          echo '\\usepackage{prelude}' >> "$filename.tex"
         fi
       fi
     else
       if [ -f prelude.sty ]; then
-        echo '\\usepackage{prelude}' >> $filename.tex
+        echo '\\usepackage{prelude}' >> "$filename.tex"
       else
         if cat "$source" | grep 'align' > /dev/null; then
-          echo '\\usepackage{amssymb,amsmath}' >> $filename.tex
+          echo '\\usepackage{amssymb,amsmath}' >> "$filename.tex"
         fi
         if cat "$source" | grep '\\bm' > /dev/null; then
-          echo '\\usepackage{bm}' >> $filename.tex
+          echo '\\usepackage{bm}' >> "$filename.tex"
         fi
         if cat "$source" | grep '\\includegraphics' > /dev/null; then
-          echo '\\usepackage[dvipdfm]{graphicx}' >> $filename.tex
+          echo '\\usepackage[dvipdfm]{graphicx}' >> "$filename.tex"
         fi
       fi
     fi
-    echo '\\begin{document}' >> $filename.tex
+    echo '\\begin{document}' >> "$filename.tex"
   else
-    echo '' > $filename.tex
+    echo '' > "$filename.tex"
   fi
 else
-  echo '' > $filename.tex
+  echo '' > "$filename.tex"
 fi
 
 # Check options (example: % dvipdfmx -f dlbase14.map)
@@ -262,13 +262,13 @@ fi
 # Main process
 if eval $texprocess; then
   if [ "$filename.pdf" != "$outputpdf" ]; then
-    mv $filename.pdf $outputpdf
+    mv "$filename.pdf" "$outputpdf"
   fi
-  eval $pdfviewer $outputpdf &
+  eval "$pdfviewer \"$outputpdf\"" &
 fi
 
 # Post process
-rm -f $filename.tex $filename.log $filename.dvi $filename.blg $filename.aux.blg
+rm -f "$filename.tex" "$filename.log" "$filename.dvi" "$filename.blg" "$filename.aux.blg"
 # If you write a comment "% rm aux toc", read that line and remove files.
 if cat "$source" | grep '^% *rm ' > /dev/null; then
   files=`cat "$source" |\
