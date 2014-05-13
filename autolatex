@@ -201,29 +201,13 @@ elif command -v kpdf >/dev/null 2>&1; then
   pdfviewer="kpdf"
 fi
 
-# Main process
+# Creating the tex file
 if [ `uname` = 'Darwin' ]; then
   cat "$source" | sed 's/^\(\\documentclass\)/ \1/' >> $outputtex
   if [ $uselatex -eq 1 ]; then
     if [ $isdocument -ne 0 ]; then
       echo '\\end{document}' >> $outputtex
     fi
-  fi
-  if [ $useps -eq 1 ]; then
-    $TEX $tex_opt $platex_opt $outputtex && \
-      dvips $outputdvi && \
-      ps2pdf $outputps && \
-      mv $filename.pdf $outputpdf && \
-      $pdfviewer $outputpdf
-  elif [ $usepdflatex -eq 1 ]; then
-    $TEX $tex_opt $platex_opt $outputtex && \
-      mv $filename.pdf $outputpdf && \
-      $pdfviewer $outputpdf
-  else
-    $TEX $tex_opt $platex_opt $outputtex && \
-      dvipdfmx $dvipdfmx_opt $outputdvi && \
-      mv $filename.pdf $outputpdf && \
-      $pdfviewer $outputpdf
   fi
 else
   # nkf -e "$source" >> .$outputtex
@@ -258,27 +242,26 @@ else
       echo '\\end{document}' >> $outputtex
     fi
   fi
-  if [ $useps -eq 1 ]; then
-    if $TEX $tex_opt $platex_opt $outputtex && \
-      dvips $outputdvi && \
-      ps2pdf $outputps; then
-      mv $filename.pdf $outputpdf && \
-      $pdfviewer $outputpdf &
-    fi
-  elif [ $usepdflatex -eq 1 ]; then
-    $TEX $tex_opt $platex_opt $outputtex && \
-      mv $filename.pdf $outputpdf && \
-      $pdfviewer $outputpdf
-    if $TEX $tex_opt $platex_opt $outputtex; then
-      mv $filename.pdf $outputpdf && \
-      $pdfviewer $outputpdf &
-    fi
-  else
-    if $TEX $tex_opt $platex_opt $outputtex && \
-      dvipdfmx $dvipdfmx_opt $outputdvi; then
-      mv $filename.pdf $outputpdf && \
-      $pdfviewer $outputpdf &
-    fi
+fi
+
+# Main process
+if [ $useps -eq 1 ]; then
+  if $TEX $tex_opt $platex_opt $outputtex && \
+    dvips $outputdvi && \
+    ps2pdf $outputps; then
+    mv $filename.pdf $outputpdf && \
+    $pdfviewer $outputpdf &
+  fi
+elif [ $usepdflatex -eq 1 ]; then
+  if $TEX $tex_opt $platex_opt $outputtex; then
+    mv $filename.pdf $outputpdf && \
+    $pdfviewer $outputpdf &
+  fi
+else
+  if $TEX $tex_opt $platex_opt $outputtex && \
+    dvipdfmx $dvipdfmx_opt $outputdvi; then
+    mv $filename.pdf $outputpdf && \
+    $pdfviewer $outputpdf &
   fi
 fi
 
