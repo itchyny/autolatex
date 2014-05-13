@@ -2,7 +2,7 @@
 # Filename: autolatex
 # Author: itchyny
 # License: MIT License
-# Last Change: 2014/05/13 14:10:55.
+# Last Change: 2014/05/13 14:11:37.
 
 # Usage: autolatex test.tex
 if [ $# -ne 1 ]; then
@@ -72,7 +72,7 @@ if ls *.bib > /dev/null 2>&1; then
 fi
 
 # Borrow document class from existing files in the directory
-if cat *.tex | grep '^\\documentclass' > /dev/null; then
+if cat *.tex 2>/dev/null | grep '^\\documentclass' > /dev/null; then
   documentclass=`cat *.tex | grep '^\\\\documentclass' | head -n 1`
 else
   documentclass='\documentclass[a4paper,11pt]{article}'
