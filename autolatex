@@ -201,7 +201,7 @@ elif command -v kpdf >/dev/null 2>&1; then
   pdfviewer="kpdf"
 fi
 
-# Creating the tex file
+# Create the tex file
 if [ `uname` = 'Darwin' ]; then
   cat "$source" | sed 's/^\(\\documentclass\)/ \1/' >> $outputtex
   if [ $uselatex -eq 1 ]; then
