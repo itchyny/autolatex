@@ -239,11 +239,11 @@ else
   fi
   cat "$source" | LC_ALL=C sed '$s/$/\n/' | LC_ALL=C sed 's/\\/\\\\/g' | while read -r line; do
     if echo $line | grep '^\\input ' > /dev/null; then
-      filename=`echo $line | sed 's/\\\\input *//'`
+      filename=`echo $line | LC_ALL=C sed 's/\\\\input *//'`
       if cat $filename | grep '^\\input' > /dev/null; then
-        cat $filename | sed 's/\\/\\\\/g' | while read -r linee; do
+        cat $filename | LC_ALL=C sed 's/\\/\\\\/g' | while read -r linee; do
           if echo $linee | grep '^\\input ' > /dev/null; then
-            filename=`echo $linee | sed 's/\\\\input *//'`
+            filename=`echo $linee | LC_ALL=C sed 's/\\\\input *//'`
             cat $filename | nkf $nkfopt >> $outputtex
           else
             echo $linee | nkf $nkfopt >> $outputtex
