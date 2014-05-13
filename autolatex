@@ -2,7 +2,7 @@
 # Filename: autolatex
 # Author: itchyny
 # License: MIT License
-# Last Change: 2014/05/13 21:04:44.
+# Last Change: 2014/05/13 21:04:56.
 
 # Usage: autolatex test.tex
 if [ $# -ne 1 ]; then
@@ -178,7 +178,7 @@ else
 fi
 
 # Check the encoding of the source file
-if [ "$(uname)" == "Darwin" ]; then
+if [ "$(uname)" = "Darwin" ]; then
   encoding="file --mime"
 else
   encoding="file -bi"
