@@ -2,7 +2,7 @@
 # Filename: autolatex
 # Author: itchyny
 # License: MIT License
-# Last Change: 2014/05/13 15:20:16.
+# Last Change: 2014/05/13 15:35:18.
 
 # Usage: autolatex test.tex
 if [ $# -ne 1 ]; then
@@ -240,18 +240,14 @@ else
   cat "$source" | LC_ALL=C sed 's/\\/\\\\/g' | while read -r line; do
     if echo $line | grep '^\\input ' > /dev/null; then
       inputfilename=`echo $line | LC_ALL=C sed 's/\\\\input *//'`
-      if cat $inputfilename | grep '^\\input' > /dev/null; then
-        cat $inputfilename | LC_ALL=C sed 's/\\/\\\\/g' | while read -r linee; do
-          if echo $linee | grep '^\\input ' > /dev/null; then
-            inputfilename=`echo $linee | LC_ALL=C sed 's/\\\\input *//'`
-            cat $inputfilename | nkf $nkfopt >> $filename.tex
-          else
-            echo $linee | nkf $nkfopt >> $filename.tex
-          fi
-        done
-      else
-        cat $inputfilename | nkf $nkfopt >> $filename.tex
-      fi
+      cat "$inputfilename" | LC_ALL=C sed 's/\\/\\\\/g' | while read -r linee; do
+        if echo $linee | grep '^\\input ' > /dev/null; then
+          inputfilename=`echo $linee | LC_ALL=C sed 's/\\\\input *//'`
+          cat $inputfilename | nkf $nkfopt >> $filename.tex
+        else
+          echo $linee | nkf $nkfopt >> $filename.tex
+        fi
+      done
     else
       echo $line | nkf $nkfopt >> $filename.tex
     fi
