@@ -184,6 +184,23 @@ else
   tex_opt=''
 fi
 
+# Pdf viewer
+if [ `uname` = 'Darwin' ]; then
+  pdfviewer="open -a Preview"
+elif command -v gnome-open >/dev/null 2>&1; then
+  pdfviewer="gnome-open"
+elif command -v xdg-open >/dev/null 2>&1; then
+  pdfviewer="xdg-open"
+elif command -v exo-open >/dev/null 2>&1; then
+  pdfviewer="exo-open"
+elif command -v evince >/dev/null 2>&1; then
+  pdfviewer="evince"
+elif command -v gpdf >/dev/null 2>&1; then
+  pdfviewer="gpdf"
+elif command -v kpdf >/dev/null 2>&1; then
+  pdfviewer="kpdf"
+fi
+
 # Main process
 if [ `uname` = 'Darwin' ]; then
   cat "$source" | sed 's/^\(\\documentclass\)/ \1/' >> $outputtex
@@ -197,16 +214,16 @@ if [ `uname` = 'Darwin' ]; then
       dvips $outputdvi && \
       ps2pdf $outputps && \
       mv $filename.pdf $outputpdf && \
-      open -a Preview $outputpdf
+      $pdfviewer $outputpdf
   elif [ $usepdflatex -eq 1 ]; then
     $TEX $tex_opt $platex_opt $outputtex && \
       mv $filename.pdf $outputpdf && \
-      open -a Preview $outputpdf
+      $pdfviewer $outputpdf
   else
     $TEX $tex_opt $platex_opt $outputtex && \
       dvipdfmx $dvipdfmx_opt $outputdvi && \
       mv $filename.pdf $outputpdf && \
-      open -a Preview $outputpdf
+      $pdfviewer $outputpdf
   fi
 else
   # nkf -e "$source" >> .$outputtex
@@ -246,21 +263,21 @@ else
       dvips $outputdvi && \
       ps2pdf $outputps; then
       mv $filename.pdf $outputpdf && \
-      evince $outputpdf &
+      $pdfviewer $outputpdf &
     fi
   elif [ $usepdflatex -eq 1 ]; then
     $TEX $tex_opt $platex_opt $outputtex && \
       mv $filename.pdf $outputpdf && \
-      open -a Preview $outputpdf
+      $pdfviewer $outputpdf
     if $TEX $tex_opt $platex_opt $outputtex; then
       mv $filename.pdf $outputpdf && \
-      evince $outputpdf &
+      $pdfviewer $outputpdf &
     fi
   else
     if $TEX $tex_opt $platex_opt $outputtex && \
       dvipdfmx $dvipdfmx_opt $outputdvi; then
       mv $filename.pdf $outputpdf && \
-      evince $outputpdf &
+      $pdfviewer $outputpdf &
     fi
   fi
 fi
