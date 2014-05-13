@@ -2,7 +2,7 @@
 # Filename: autolatex
 # Author: itchyny
 # License: MIT License
-# Last Change: 2014/05/13 18:29:16.
+# Last Change: 2014/05/13 18:36:45.
 
 # Usage: autolatex test.tex
 if [ $# -ne 1 ]; then
@@ -104,10 +104,7 @@ else
 fi
 
 # Check if the argument file is a piece of a document.
-if [ $uselatex -eq 1 ]; then
-  cat "$source" | grep 'documentclass' > /dev/null
-  isdocument=$?
-  if [ $isdocument -ne 0 ]; then
+if [ $uselatex -eq 1 ] && ! cat "$source" | grep 'documentclass' > /dev/null; then
     echo " $documentclass" > "$filename.tex"
     mainfile=0
     for file in *tex
@@ -142,11 +139,10 @@ if [ $uselatex -eq 1 ]; then
       fi
     fi
     echo '\\begin{document}' >> "$filename.tex"
-  else
-    echo '' > "$filename.tex"
-  fi
+    enddocument='\end{document}'
 else
   echo '' > "$filename.tex"
+  enddocument=''
 fi
 
 # Check options (example: % dvipdfmx -f dlbase14.map)
@@ -216,11 +212,7 @@ fi
 # Create the tex file
 if [ $utf8 -eq $sourceutf8 ]; then
   cat "$source" | sed 's/^\(\\documentclass\)/ \1/' >> "$filename.tex"
-  if [ $uselatex -eq 1 ]; then
-    if [ $isdocument -ne 0 ]; then
-      echo '\\end{document}' >> "$filename.tex"
-    fi
-  fi
+  echo $enddocument >> "$filename.tex"
 else
   # nkf -e "$source" >> ."$filename.tex"
   IFS=$'\n'
@@ -246,11 +238,7 @@ else
       echo $line | nkf $nkfopt >> "$filename.tex"
     fi
   done
-  if [ $uselatex -eq 1 ]; then
-    if [ $isdocument -ne 0 ]; then
-      echo '\\end{document}' >> "$filename.tex"
-    fi
-  fi
+  echo $enddocument >> "$filename.tex"
 fi
 
 # Main process
