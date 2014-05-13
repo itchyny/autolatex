@@ -2,7 +2,7 @@
 # Filename: autolatex
 # Author: itchyny
 # License: MIT License
-# Last Change: 2014/05/13 12:37:29.
+# Last Change: 2014/05/13 13:17:08.
 
 # Usage: autolatex test.tex
 if [ $# -ne 1 ]; then
@@ -270,24 +270,28 @@ else
 fi
 
 # Main process
+success=0
 if [ $useps -eq 1 ]; then
   if $TEX $tex_opt $platex_opt $outputtex && \
     dvips $outputdvi && \
     ps2pdf $outputps; then
-    mv $filename.pdf $outputpdf && \
-    eval $pdfviewer $outputpdf &
+    success=1
   fi
 elif [ $usepdflatex -eq 1 ]; then
   if $TEX $tex_opt $platex_opt $outputtex; then
-    mv $filename.pdf $outputpdf && \
-    eval $pdfviewer $outputpdf &
+    success=1
   fi
 else
   if $TEX $tex_opt $platex_opt $outputtex && \
     dvipdfmx $dvipdfmx_opt $outputdvi; then
-    mv $filename.pdf $outputpdf && \
-    eval $pdfviewer $outputpdf &
+    success=1
   fi
+fi
+if [ $success -eq 1 ]; then
+  if [ "$filename.pdf" != "$outputpdf" ]; then
+    mv $filename.pdf $outputpdf
+  fi
+  eval $pdfviewer $outputpdf &
 fi
 
 # Post process
