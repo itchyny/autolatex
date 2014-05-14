@@ -2,7 +2,7 @@
 # Filename: autolatex
 # Author: itchyny
 # License: MIT License
-# Last Change: 2014/05/13 21:11:02.
+# Last Change: 2014/05/14 15:58:18.
 
 # Usage: autolatex test.tex
 if [ $# -ne 1 ]; then
@@ -48,7 +48,7 @@ fi
 
 # BibTeX
 # You can use jbibtex if you wish with a comment: % jbibtex
-if command -v jbibtex >/dev/null 2>&1 && cat "$source" | grep '^% *jbibtex *$' > /dev/null; then
+if command -v jbibtex > /dev/null 2>&1 && cat "$source" | grep '^% *jbibtex *$' > /dev/null; then
   bibtex=jbibtex
 else
   bibtex=bibtex
@@ -66,7 +66,7 @@ if ls *.bib > /dev/null 2>&1 && [ -f "$filename.aux" ]; then
 fi
 
 # Borrow document class from existing files in the directory
-if cat *.tex 2>/dev/null | grep '^\\documentclass' > /dev/null; then
+if cat *.tex 2> /dev/null | grep '^\\documentclass' > /dev/null; then
   documentclass=$(cat *.tex | grep '^\\documentclass' | head -n 1)
 else
   documentclass='\documentclass[a4paper,11pt]{article}'
@@ -156,17 +156,17 @@ fi
 # Pdf viewer
 if [ `uname` = 'Darwin' ]; then
   pdfviewer="open -a Preview"
-elif command -v gnome-open >/dev/null 2>&1; then
+elif command -v gnome-open > /dev/null 2>&1; then
   pdfviewer="gnome-open"
-elif command -v xdg-open >/dev/null 2>&1; then
+elif command -v xdg-open > /dev/null 2>&1; then
   pdfviewer="xdg-open"
-elif command -v exo-open >/dev/null 2>&1; then
+elif command -v exo-open > /dev/null 2>&1; then
   pdfviewer="exo-open"
-elif command -v evince >/dev/null 2>&1; then
+elif command -v evince > /dev/null 2>&1; then
   pdfviewer="evince"
-elif command -v gpdf >/dev/null 2>&1; then
+elif command -v gpdf > /dev/null 2>&1; then
   pdfviewer="gpdf"
-elif command -v kpdf >/dev/null 2>&1; then
+elif command -v kpdf > /dev/null 2>&1; then
   pdfviewer="kpdf"
 fi
 
