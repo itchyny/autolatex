@@ -2,7 +2,7 @@
 # Filename: autolatex
 # Author: itchyny
 # License: MIT License
-# Last Change: 2014/05/20 20:53:20.
+# Last Change: 2014/05/20 20:54:33.
 
 # Usage: autolatex test.tex
 if [ $# -ne 1 ]; then
@@ -55,7 +55,7 @@ if command -v jbibtex > /dev/null 2>&1 && cat "$source" | grep '^% *jbibtex *$' 
 else
   bibtex=bibtex
 fi
-if ls *.bib > /dev/null 2>&1 && [ -f "$filename.aux" ]; then
+if ls ./*.bib > /dev/null 2>&1 && [ -f "$filename.aux" ]; then
   if cat "$source" | grep '\\bibliography' > /dev/null; then
     $bibtex "$filename.aux"
     if [ -f "$filename.aux.bbl" ]; then
@@ -68,8 +68,8 @@ if ls *.bib > /dev/null 2>&1 && [ -f "$filename.aux" ]; then
 fi
 
 # Borrow document class from existing files in the directory
-if cat *.tex 2> /dev/null | grep '^\\documentclass' > /dev/null; then
-  documentclass=$(cat *.tex | grep '^\\documentclass' | head -n 1)
+if cat ./*.tex 2> /dev/null | grep '^\\documentclass' > /dev/null; then
+  documentclass=$(cat ./*.tex | grep '^\\documentclass' | head -n 1)
 else
   documentclass='\documentclass[a4paper,11pt]{article}'
 fi
