@@ -2,7 +2,7 @@
 # Filename: autolatex
 # Author: itchyny
 # License: MIT License
-# Last Change: 2014/05/20 20:39:24.
+# Last Change: 2014/05/20 20:40:51.
 
 # Usage: autolatex test.tex
 if [ $# -ne 1 ]; then
@@ -156,7 +156,7 @@ elif cat "$source" | grep '{\(abc\)}' > /dev/null; then
 fi
 
 # Pdf viewer
-if [ `uname` = 'Darwin' ]; then
+if [ "$(uname)" = 'Darwin' ]; then
   pdfviewer="open -a Preview"
 elif command -v gnome-open > /dev/null 2>&1; then
   pdfviewer="gnome-open"
