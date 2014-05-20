@@ -2,7 +2,7 @@
 # Filename: autolatex
 # Author: itchyny
 # License: MIT License
-# Last Change: 2014/05/20 21:04:14.
+# Last Change: 2014/05/20 21:09:59.
 
 # Usage: autolatex test.tex
 if [ $# -ne 1 ]; then
@@ -39,8 +39,9 @@ if grep '^% *filename  *[[:alnum:]]' "$source" > /dev/null; then
   outputpdf=$filename.pdf
   specified=1
 fi
-while [ -e "$filename.tex" ] && [ "$(head -n 1 "$filename.tex")" != "%%%%%autolatex%%%%%" ] ; do
-  filename=$filename"_"
+texfile=$filename.tex
+while [ -e "$texfile" ] && [ "$(head -n 1 "$texfile")" != "%%%%%autolatex%%%%%" ] ; do
+  texfile=$texfile"_"
 done
 if [ $specified = 0 ]; then
   outputpdf=$filename.pdf
@@ -103,9 +104,9 @@ else
 fi
 
 # Check if the argument file is a piece of a document.
-echo '%%%%%autolatex%%%%%' > "$filename.tex"
+echo '%%%%%autolatex%%%%%' > "$texfile"
 if [ $uselatex -eq 1 ] && ! grep 'documentclass' "$source" > /dev/null; then
-  echo " $documentclass" >> "$filename.tex"
+  echo " $documentclass" >> "$texfile"
   mainfile=0
   for file in *.tex
   do
@@ -116,19 +117,19 @@ if [ $uselatex -eq 1 ] && ! grep 'documentclass' "$source" > /dev/null; then
   done
   if [ $mainfile -eq 1 ]; then
     cat -- "$file" | LC_ALL=C sed 's/^\\documentclass/% \\documentclass/' |\
-      LC_ALL=C sed '/\\begin{document}/,$d' >> "$filename.tex"
+      LC_ALL=C sed '/\\begin{document}/,$d' >> "$texfile"
   else
     if grep '{\(align\|cases\)' "$source" > /dev/null; then
-      echo '\\usepackage{amssymb,amsmath}' >> "$filename.tex"
+      echo '\\usepackage{amssymb,amsmath}' >> "$texfile"
     fi
     if grep '\\bm' "$source" > /dev/null; then
-      echo '\\usepackage{bm}' >> "$filename.tex"
+      echo '\\usepackage{bm}' >> "$texfile"
     fi
     if grep '\\includegraphics' "$source" > /dev/null; then
-      echo '\\usepackage[dvipdfm]{graphicx}' >> "$filename.tex"
+      echo '\\usepackage[dvipdfm]{graphicx}' >> "$texfile"
     fi
   fi
-  echo '\\begin{document}' >> "$filename.tex"
+  echo '\\begin{document}' >> "$texfile"
   enddocument='\end{document}'
 else
   enddocument=''
@@ -185,19 +186,19 @@ fi
 
 # TeX process
 if [ $useps -eq 1 ]; then
-  texprocess="$tex $tex_opt \"$filename.tex\" && dvips \"$filename.dvi\" && ps2pdf \"$filename.ps\""
+  texprocess="$tex $tex_opt \"$texfile\" && dvips \"$filename.dvi\" && ps2pdf \"$filename.ps\""
 elif [ $usepdflatex -eq 1 ]; then
-  texprocess="$tex $tex_opt \"$filename.tex\""
+  texprocess="$tex $tex_opt \"$texfile\""
 else
-  texprocess="$tex $tex_opt \"$filename.tex\" && dvipdfmx $dvipdfmx_opt \"$filename.dvi\""
+  texprocess="$tex $tex_opt \"$texfile\" && dvipdfmx $dvipdfmx_opt \"$filename.dvi\""
 fi
 
 # Create the tex file
 if [ $utf8 -eq 1 ] && [ $sourceutf8 -eq 1 ]; then
-  sed 's/^\(\\documentclass\)/ \1/' "$source" >> "$filename.tex"
-  echo "$enddocument" >> "$filename.tex"
+  sed 's/^\(\\documentclass\)/ \1/' "$source" >> "$texfile"
+  echo "$enddocument" >> "$texfile"
 else
-  # nkf -e "$source" >> ."$filename.tex"
+  # nkf -e "$source" >> ."$texfile"
   IFS='
 '
   if platex -v | head -n 1 | grep "(utf8" > /dev/null; then
@@ -213,16 +214,16 @@ else
       cat -- "$inputfilename" | LC_ALL=C sed 's/\\/\\\\/g' | while read -r linee; do
         if echo "$linee" | grep '^\\input ' > /dev/null; then
           inputfilename=$(echo "$linee" | LC_ALL=C sed 's/\\input *//')
-          cat -- "$inputfilename" | nkf $nkfopt >> "$filename.tex"
+          cat -- "$inputfilename" | nkf $nkfopt >> "$texfile"
         else
-          echo "$linee" | nkf $nkfopt >> "$filename.tex"
+          echo "$linee" | nkf $nkfopt >> "$texfile"
         fi
       done
     else
-      echo "$line" | nkf $nkfopt >> "$filename.tex"
+      echo "$line" | nkf $nkfopt >> "$texfile"
     fi
   done
-  echo "$enddocument" >> "$filename.tex"
+  echo "$enddocument" >> "$texfile"
 fi
 
 # Main process
@@ -236,7 +237,7 @@ if eval "$texprocess"; then
 fi
 
 # Post process
-rm -f "$filename.tex" "$filename.log" "$filename.dvi" "$filename.blg" "$filename.aux.blg" "$filename.bbl.bak" "$filename.aux.bbl.bak"
+rm -f "$texfile" "$filename.log" "$filename.dvi" "$filename.blg" "$filename.aux.blg" "$filename.bbl.bak" "$filename.aux.bbl.bak"
 # If you write a comment "% rm aux toc", read that line and remove files.
 if grep '^% *rm ' "$source" > /dev/null; then
   files=$(grep '^% *rm ' "$source" |\
