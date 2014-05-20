@@ -2,7 +2,7 @@
 # Filename: autolatex
 # Author: itchyny
 # License: MIT License
-# Last Change: 2014/05/20 17:21:49.
+# Last Change: 2014/05/20 17:38:35.
 
 # Usage: autolatex test.tex
 if [ $# -ne 1 ]; then
@@ -111,13 +111,13 @@ if [ $uselatex -eq 1 ] && ! cat "$source" | grep 'documentclass' > /dev/null; th
   mainfile=0
   for file in *tex
   do
-    if cat "$file" | grep '^\\documentclass' > /dev/null; then
+    if cat -- "$file" | grep '^\\documentclass' > /dev/null; then
       mainfile=1
       break;
     fi
   done
   if [ $mainfile -eq 1 ]; then
-    cat "$file" | LC_ALL=C sed 's/^\\documentclass/% \\documentclass/' |\
+    cat -- "$file" | LC_ALL=C sed 's/^\\documentclass/% \\documentclass/' |\
       LC_ALL=C sed '/\\begin{document}/,$d' >> "$filename.tex"
   else
     if cat "$source" | grep '{\(align\|cases\)' > /dev/null; then
@@ -218,10 +218,10 @@ else
   cat "$source" | LC_ALL=C sed 's/\\/\\\\/g' | while read -r line; do
     if echo $line | grep '^\\input ' > /dev/null; then
       inputfilename=$(echo $line | LC_ALL=C sed 's/\\input *//')
-      cat "$inputfilename" | LC_ALL=C sed 's/\\/\\\\/g' | while read -r linee; do
+      cat -- "$inputfilename" | LC_ALL=C sed 's/\\/\\\\/g' | while read -r linee; do
         if echo $linee | grep '^\\input ' > /dev/null; then
           inputfilename=$(echo $linee | LC_ALL=C sed 's/\\input *//')
-          cat "$inputfilename" | nkf $nkfopt >> "$filename.tex"
+          cat -- "$inputfilename" | nkf $nkfopt >> "$filename.tex"
         else
           echo $linee | nkf $nkfopt >> "$filename.tex"
         fi
