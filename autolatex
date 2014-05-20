@@ -2,7 +2,7 @@
 # Filename: autolatex
 # Author: itchyny
 # License: MIT License
-# Last Change: 2014/05/20 20:38:21.
+# Last Change: 2014/05/20 20:38:58.
 
 # Usage: autolatex test.tex
 if [ $# -ne 1 ]; then
@@ -238,7 +238,9 @@ if eval $texprocess; then
   if [ "$filename.pdf" != "$outputpdf" ]; then
     mv -f "$filename.pdf" "$outputpdf"
   fi
-  eval "$pdfviewer \"$outputpdf\"" &
+  if [ "$pdfviewer" != "" ]; then
+    eval "$pdfviewer \"$outputpdf\"" &
+  fi
 fi
 
 # Post process
