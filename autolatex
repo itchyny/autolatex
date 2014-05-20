@@ -2,7 +2,7 @@
 # Filename: autolatex
 # Author: itchyny
 # License: MIT License
-# Last Change: 2014/05/21 00:02:10.
+# Last Change: 2014/05/21 00:02:21.
 
 # Usage: autolatex test.tex
 if [ $# -ne 1 ]; then
@@ -167,6 +167,8 @@ elif command -v gpdf > /dev/null 2>&1; then
   pdfviewer="gpdf"
 elif command -v kpdf > /dev/null 2>&1; then
   pdfviewer="kpdf"
+else
+  pdfviewer=""
 fi
 
 # Check if platex supports utf8
