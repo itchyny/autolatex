@@ -2,7 +2,7 @@
 # Filename: autolatex
 # Author: itchyny
 # License: MIT License
-# Last Change: 2014/05/20 20:40:51.
+# Last Change: 2014/05/20 20:45:50.
 
 # Usage: autolatex test.tex
 if [ $# -ne 1 ]; then
@@ -203,7 +203,7 @@ fi
 # Create the tex file
 if [ $utf8 -eq 1 ] && [ $sourceutf8 -eq 1 ]; then
   cat "$source" | sed 's/^\(\\documentclass\)/ \1/' >> "$filename.tex"
-  echo $enddocument >> "$filename.tex"
+  echo "$enddocument" >> "$filename.tex"
 else
   # nkf -e "$source" >> ."$filename.tex"
   IFS='
@@ -216,25 +216,25 @@ else
     nkfopt=-e
   fi
   cat "$source" | LC_ALL=C sed 's/\\/\\\\/g' | while read -r line; do
-    if echo $line | grep '^\\input ' > /dev/null; then
-      inputfilename=$(echo $line | LC_ALL=C sed 's/\\input *//')
+    if echo "$line" | grep '^\\input ' > /dev/null; then
+      inputfilename=$(echo "$line" | LC_ALL=C sed 's/\\input *//')
       cat -- "$inputfilename" | LC_ALL=C sed 's/\\/\\\\/g' | while read -r linee; do
-        if echo $linee | grep '^\\input ' > /dev/null; then
-          inputfilename=$(echo $linee | LC_ALL=C sed 's/\\input *//')
+        if echo "$linee" | grep '^\\input ' > /dev/null; then
+          inputfilename=$(echo "$linee" | LC_ALL=C sed 's/\\input *//')
           cat -- "$inputfilename" | nkf $nkfopt >> "$filename.tex"
         else
-          echo $linee | nkf $nkfopt >> "$filename.tex"
+          echo "$linee" | nkf $nkfopt >> "$filename.tex"
         fi
       done
     else
-      echo $line | nkf $nkfopt >> "$filename.tex"
+      echo "$line" | nkf $nkfopt >> "$filename.tex"
     fi
   done
-  echo $enddocument >> "$filename.tex"
+  echo "$enddocument" >> "$filename.tex"
 fi
 
 # Main process
-if eval $texprocess; then
+if eval "$texprocess"; then
   if [ "$filename.pdf" != "$outputpdf" ]; then
     mv -f "$filename.pdf" "$outputpdf"
   fi
