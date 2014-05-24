@@ -2,7 +2,7 @@
 # Filename: autolatex
 # Author: itchyny
 # License: MIT License
-# Last Change: 2014/05/21 11:44:40.
+# Last Change: 2014/05/22 09:53:04.
 
 # Usage: autolatex test.tex
 if [ $# -ne 1 ]; then
@@ -35,7 +35,7 @@ fi
 specified=0
 # If you write a comment "% filename test", it reads that line and set as the filename.
 if grep '^% *filename  *[[:alnum:]]' "$source" > /dev/null; then
-  filename="./"$(grep '^% *filename ' "$source" | sed 's/% *filename *\| *$//g' | tr -d '\r\n')
+  filename="./"$(grep '^% *filename ' "$source" | sed 's/% *filename *//g;s/ *$//g' | tr -d '\r\n')
   outputpdf=$filename.pdf
   specified=1
 fi
