@@ -2,7 +2,7 @@
 # Filename: autolatex
 # Author: itchyny
 # License: MIT License
-# Last Change: 2014/05/22 09:53:04.
+# Last Change: 2014/05/24 14:50:32.
 
 # Usage: autolatex test.tex
 if [ $# -ne 1 ]; then
@@ -35,7 +35,7 @@ fi
 specified=0
 # If you write a comment "% filename test", it reads that line and set as the filename.
 if grep '^% *filename  *[[:alnum:]]' "$source" > /dev/null; then
-  filename="./"$(grep '^% *filename ' "$source" | sed 's/% *filename *//g;s/ *$//g' | tr -d '\r\n')
+  filename="./"$(grep '^% *filename ' "$source" | sed 's/^% *filename *//g;s/ *$//g' | tr -d '\r\n')
   outputpdf=$filename.pdf
   specified=1
 fi
@@ -79,7 +79,7 @@ fi
 
 # If there is \bye command, use tex instead of platex
 usepdflatex=0
-if grep '% *pdflatex' "$source" > /dev/null; then
+if grep '^% *pdflatex' "$source" > /dev/null; then
   uselatex=1
   usepdflatex=1
   tex=pdflatex
@@ -141,13 +141,13 @@ fi
 
 # Check options (example: % dvipdfmx -f dlbase14.map)
 if grep '^% *dvipdfmx ' "$source" > /dev/null; then
-  dvipdfmx_opt=$(grep '^% *dvipdfmx ' "$source" | sed 's/% *dvipdfmx//' | tr -d '\r')
+  dvipdfmx_opt=$(grep '^% *dvipdfmx ' "$source" | sed 's/^% *dvipdfmx//' | tr -d '\r')
 else
   dvipdfmx_opt=''
 fi
 tex_opt=''
 if grep '^% *\(p\(df\)\?la\)\?tex ' "$source" > /dev/null; then
-  tex_opt=$(grep '^% *\(p\(df\)\?la\)\?tex ' "$source" | sed 's/% *\(p\(df\)*la\)*tex//' | tr -d '\r')
+  tex_opt=$(grep '^% *\(p\(df\)\?la\)\?tex ' "$source" | sed 's/^% *\(p\(df\)*la\)*tex//' | tr -d '\r')
 elif grep '{\(abc\)}' "$source" > /dev/null; then
   tex_opt='--shell-escape'
 fi
@@ -247,7 +247,7 @@ rm -f "$texfile" "$filename.log" "$filename.dvi" "$filename.blg" "$filename.aux.
 # If you write a comment "% rm aux toc", read that line and remove files.
 if grep '^% *rm ' "$source" > /dev/null; then
   files=$(grep '^% *rm ' "$source" |\
-    sed 's/% *rm//' |\
+    sed 's/^% *rm//' |\
     sed "s/\([ ,]\)\([^ ,][^ ,]*\)/ \"$(echo "$filename" | sed 's/\//\\\//g').\2\"/g" |\
     tr '\r,' ' ' )
   eval "rm -f $files"
