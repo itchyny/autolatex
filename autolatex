@@ -2,7 +2,7 @@
 # Filename: autolatex
 # Author: itchyny
 # License: MIT License
-# Last Change: 2014/05/24 14:50:32.
+# Last Change: 2014/08/22 14:05:54.
 
 # Usage: autolatex test.tex
 if [ $# -ne 1 ]; then
@@ -230,6 +230,11 @@ else
     fi
   done
   echo "$enddocument" >> "$texfile"
+fi
+
+# Check if the file exists
+if ! [ -e "$texfile" ]; then
+  exit 1
 fi
 
 # Main process
