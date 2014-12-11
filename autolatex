@@ -2,7 +2,7 @@
 # Filename: autolatex
 # Author: itchyny
 # License: MIT License
-# Last Change: 2014/10/28 10:30:20.
+# Last Change: 2014/12/11 20:55:40.
 
 # Usage: autolatex test.tex
 if [ $# -ne 1 ]; then
@@ -26,12 +26,12 @@ cd "$dirname"
 # You can omit the file extension
 if ! [ -f "$source" ] && [ "$source" = "${source%.*}" ]; then
   source=$source.tex
-  if ! [ -f "$source" ]; then
-    echo "$source not found"
-    exit 1
-  fi
 fi
 source="./"$source
+if ! [ -f "$source" ]; then
+  echo "$source not found"
+  exit 1
+fi
 
 # Temporary file
 filename=${source%.*}
