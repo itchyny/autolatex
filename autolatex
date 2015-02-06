@@ -2,7 +2,7 @@
 # Filename: autolatex
 # Author: itchyny
 # License: MIT License
-# Last Change: 2015/02/02 17:30:57.
+# Last Change: 2015/02/06 15:16:54.
 
 # Usage: autolatex test.tex
 if [ $# -eq 0 ]; then
@@ -14,6 +14,9 @@ if ! command -v platex > /dev/null 2>&1; then
   echo 'platex required'
   exit 1
 fi
+
+# Save current path
+savepath="$(pwd)"
 
 # Source file
 source=$(basename -- "$1")
@@ -262,6 +265,9 @@ if grep '^% *rm ' "$source" > /dev/null; then
     tr '\r,' ' ' )
   eval "rm -f $files"
 fi
+
+# Restore current path
+cd "$savepath" > /dev/null
 
 shift
 $0 "$@"
